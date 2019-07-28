@@ -34,7 +34,7 @@ def get_netpay(page):
 
 def pay_period(page):
     """
-    Parges page and retrieves the pay period dates ex. '06/29/2019 - 7/12/2019'
+    Parses page and retrieves the pay period dates ex. '06/29/2019 - 7/12/2019'
     :param page: page number to parse
     :return: a string of the pay period dates
     """
@@ -53,6 +53,16 @@ def pay_period(page):
     return pay_period_dates
 
 
+def print_sauce(pay_period_dates, hours, grosspay, netpay):
+    hourly_pay = float(grosspay) / float(hours)
+    print('-' * len(pay_period_dates))
+    print(pay_period_dates)
+    print(f'Hours: {hours}')
+    print(f'Gross Pay: ${grosspay}')
+    print(f'Hourly Pay: ${hourly_pay:.2f}/hour')
+    print(f'Net Pay: ${netpay}')
+
+
 if __name__ == '__main__':
     # set up PyPDF2 object
     os.chdir('pdf\\')
@@ -62,8 +72,13 @@ if __name__ == '__main__':
     # get number of pages in PDF
     num_pages = reader.numPages
 
+    # collection of lists for YTD
+    grosspay_list = []
+    netpay_list = []
+    hour_list = []
+
     for page in range(num_pages):
-        if page % 2 != 0:
+        if page % 2 != 0: # skips every other page which contain an image of the 'paycheck'
             continue
         # set up page number
         page_num = reader.getPage(page)
@@ -80,11 +95,7 @@ if __name__ == '__main__':
         netpay = get_netpay(page_text)
 
         # print hours, gross pay and net pay
-        print('-' * 22)
-        print(pay_period_dates)
-        print(f'Hours: ${hours}')
-        print(f'Gross Pay: ${grosspay}')
-        print(f'Net Pay: ${netpay}')
+        print_sauce(pay_period_dates, hours, grosspay, netpay)
 
     pdfFile.close()
 # that's all folks
