@@ -1,7 +1,35 @@
 from statistics import mean
+from tkinter import filedialog
+import tkinter
 import PyPDF2
 import os
 import re
+
+
+def search_file_path():
+    """
+    Opens a file dialog window that asks the user to pick the PDF file they'd like to process
+    :return: a string of the direct file path
+    """
+    while True:
+        # set up tkinter object
+        root = tkinter.Tk()
+        root.withdraw() # used to hide the tkinter window
+
+        # bring up the dialog window
+        curr_dir = os.getcwd()
+        pdf_path = filedialog.askopenfilename(parent=root, initialdir=curr_dir, title='Please Select Pay Stub PDF')
+
+        # get file name and extension and check if the file is a PDF
+        pdf_name = os.path.split(pdf_path)[1]
+        pdf_extension = os.path.splitext(pdf_path)[1]
+        if len(pdf_path) > 0 and pdf_extension == '.pdf':
+            print(f'Processing {pdf_name}')
+            break
+        else:
+            print("File selected isn't a PDF or you didn't select a file")
+            continue
+    return pdf_path
 
 
 def get_hours_grosspay(page):
@@ -78,7 +106,7 @@ def print_sauce(pay_period_dates, hours, grosspay, netpay):
     print(f'Net Pay: ${netpay}')
 
 
-def print_average_sauce(average_grosspay, average_netpay, average_hours, average_hourly):
+def print_average_sauce(average_grosspay, average_netpay, average_hours, average_hourly, num_pages):
     """
     Prints out the gross, net, hourly pay and average hours worked
     :param average_grosspay: self
@@ -89,7 +117,7 @@ def print_average_sauce(average_grosspay, average_netpay, average_hours, average
     """
     # print out YTD averages
     print('*' * 50)
-    print('Average of All Pay Stubs Processed')
+    print(f'Average of All {round(num_pages / 2)} Pay Stubs Processed')
     print('-' * 50)
     print(f'Average Hours Worked: {average_hours:.2f}')
     print(f'Average Gross Pay: ${average_grosspay:.2f}')
@@ -112,11 +140,26 @@ def get_average_hourly(grosspay_list, hour_list):
     return mean(hourly_list)
 
 
+def are_we_printing():
+    """
+    Asks the user if they would like to pretty print each individual pay stub
+    :return: a 0 or a 1 depending on the users answer (0 == False, 1 == True)
+    """
+    do_you_wanna = input('Would you like to pretty print each pay stub? [y/n]\n> ')
+    if do_you_wanna.lower() == 'y' or do_you_wanna.lower() == 'yes':
+        print_the_sauce = 1
+        return print_the_sauce
+    else:
+        print_the_sauce = 0
+        print('Only printing out the averages!')
+        return print_the_sauce
+
+
 if __name__ == '__main__':
-    # set up PyPDF2 object
-    os.chdir('pdf\\')
-    pdfFile = open('paystubs2014_2019.pdf', 'rb')
-    reader = PyPDF2.PdfFileReader(pdfFile, strict=False)
+    # set up PyPDF2 object and get PDF file path
+    pdf_file_path = search_file_path()
+    pdf_file = open(pdf_file_path, 'rb')
+    reader = PyPDF2.PdfFileReader(pdf_file, strict=False)
 
     # get number of pages in PDF
     num_pages = reader.numPages
@@ -125,6 +168,9 @@ if __name__ == '__main__':
     grosspay_list = []
     hour_list = []
     netpay_list = []
+
+    # ask the user if they'd like to print out a pretty print pay stub for each pay stub
+    do_you_wanna = are_we_printing()
 
     for page in range(num_pages):
         # set up page number & get text from PDF page number
@@ -151,7 +197,8 @@ if __name__ == '__main__':
         netpay_list.append(float(netpay))
 
         # print hours, gross pay and net pay
-        print_sauce(pay_period_dates, hours, grosspay, netpay)
+        if do_you_wanna:
+            print_sauce(pay_period_dates, hours, grosspay, netpay)
 
     # get averages for gross, net, and hourly pay
     average_grosspay = mean(grosspay_list)
@@ -159,7 +206,8 @@ if __name__ == '__main__':
     average_hours = mean(hour_list)
     average_hourly = get_average_hourly(grosspay_list, hour_list)
 
-    print_average_sauce(average_grosspay, average_netpay, average_hours, average_hourly)
+    print_average_sauce(average_grosspay, average_netpay, average_hours,
+                        average_hourly, num_pages)
 
-    pdfFile.close()
+    pdf_file.close()
 # that's all folks
