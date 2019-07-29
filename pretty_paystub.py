@@ -28,7 +28,6 @@ def search_file_path():
             break
         else:
             print("File selected isn't a PDF or you didn't select a file")
-            continue
     return pdf_path
 
 
@@ -126,20 +125,6 @@ def print_average_sauce(average_grosspay, average_netpay, average_hours, average
     print('*' * 50)
 
 
-def get_average_hourly(grosspay_list, hour_list):
-    """
-    Gets the average hourly pay of all processed pay stubs
-    :param grosspay_list: list of processed grosspay from pay stubs
-    :param hour_list: list of processed hours from pay stubs
-    :return: average hourly for processed pay stubs
-    """
-    hourly_list = []
-    for pay, hours in zip(grosspay_list, hour_list):
-        hourly = pay / hours
-        hourly_list.append(hourly)
-    return mean(hourly_list)
-
-
 def are_we_printing():
     """
     Asks the user if they would like to pretty print each individual pay stub
@@ -147,10 +132,10 @@ def are_we_printing():
     """
     do_you_wanna = input('Would you like to pretty print each pay stub? [y/n]\n> ')
     if do_you_wanna.lower() == 'y' or do_you_wanna.lower() == 'yes':
-        print_the_sauce = 1
+        print_the_sauce = True
         return print_the_sauce
     else:
-        print_the_sauce = 0
+        print_the_sauce = False
         print('Only printing out the averages!')
         return print_the_sauce
 
@@ -204,7 +189,7 @@ if __name__ == '__main__':
     average_grosspay = mean(grosspay_list)
     average_netpay = mean(netpay_list)
     average_hours = mean(hour_list)
-    average_hourly = get_average_hourly(grosspay_list, hour_list)
+    average_hourly = mean([pay/hours for pay, hours in zip(grosspay_list, hour_list)])
 
     print_average_sauce(average_grosspay, average_netpay, average_hours,
                         average_hourly, num_pages)
