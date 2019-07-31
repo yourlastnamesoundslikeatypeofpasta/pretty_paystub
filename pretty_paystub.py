@@ -4,6 +4,7 @@ import tkinter
 import PyPDF2
 import os
 import re
+import sys
 
 
 def search_file_path():
@@ -20,9 +21,13 @@ def search_file_path():
         curr_dir = os.getcwd()
         pdf_path = filedialog.askopenfilename(parent=root, initialdir=curr_dir, title='Please Select Pay Stub PDF')
 
-        # get file name and extension and check if the file is a PDF
-        pdf_name = os.path.split(pdf_path)[1]
-        pdf_extension = os.path.splitext(pdf_path)[1]
+        # get file name and extension and check if the file is a PDF, but quit the application if user clicks cancel
+        try:
+            pdf_name = os.path.split(pdf_path)[1]
+            pdf_extension = os.path.splitext(pdf_path)[1]
+        except TypeError:
+            print('Dialog Window Cancelled: Quitting Application.')
+            sys.exit()
         if len(pdf_path) > 0 and pdf_extension == '.pdf':
             print(f'Processing {pdf_name}')
             break
